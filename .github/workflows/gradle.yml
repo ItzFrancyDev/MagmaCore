@@ -67,8 +67,15 @@ jobs:
           if [ -f "$JAR_PATH" ]; then
             echo "Spigot version $v (remapped-mojang) found in cache. Skipping BuildTools."
           else
-            echo "Spigot version $v not found in cache. Running BuildTools with Java 17..."
-            $JAVA_HOME_17_X64/bin/java -jar BuildTools.jar --rev "$v" --remapped
+            if [[ "$v" == 1.21* || "$v" == "1.20.5" || "$v" == "1.20.6" ]]; then
+              JAVA_EXEC="$JAVA_HOME_21_X64/bin/java"
+              echo "Spigot version $v requires Java 21. Running BuildTools..."
+            else
+              JAVA_EXEC="$JAVA_HOME_17_X64/bin/java"
+              echo "Spigot version $v requires Java 17. Running BuildTools..."
+            fi
+            
+            $JAVA_EXEC -jar BuildTools.jar --rev "$v" --remapped
           fi
           echo "========================================="
         done
