@@ -1,10 +1,3 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-# This workflow will build a package using Gradle and then publish it to GitHub packages when a release is created
-# For more information see: https://github.com/actions/setup-java/blob/main/docs/advanced-usage.md#Publishing-using-gradle
-
 name: Gradle Package
 
 on:
@@ -35,7 +28,7 @@ jobs:
         mkdir -p gradle/wrapper
         gradle wrapper
         chmod +x gradlew
-    
+
     - name: Cache Local Maven Repository
       uses: actions/cache@v4
       with:
@@ -68,12 +61,18 @@ jobs:
         UNIQUE_VERSIONS=$(echo "${VERSIONS[@]}" | tr ' ' '\n' | sort -u)
 
         for v in $UNIQUE_VERSIONS; do
+          JAR_PATH="$HOME/.m2/repository/org/spigotmc/spigot/$v-R0.1-SNAPSHOT/spigot-$v-R0.1-SNAPSHOT-remapped-mojang.jar"
+          
           echo "========================================="
-          echo "Building Spigot version: $v --remapped"
+          if [ -f "$JAR_PATH" ]; then
+            echo "Spigot version $v (remapped-mojang) found in cache. Skipping BuildTools."
+          else
+            echo "Spigot version $v not found in cache. Running BuildTools with Java 17..."
+            /usr/lib/jvm/temurin-17-amd64/bin/java -jar BuildTools.jar --rev "$v" --remapped
+          fi
           echo "========================================="
-          java -jar BuildTools.jar --rev "$v" --remapped
         done
-      
+
     - name: Build with Gradle
       run: ./gradlew :dist:shadowJar
 
