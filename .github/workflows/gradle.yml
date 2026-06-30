@@ -30,8 +30,11 @@ jobs:
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
 
-    - name: Make gradlew executable
-      run: chmod +x gradlew
+    - name: Download missing Gradle Wrapper JAR
+      run: |
+        mkdir -p gradle/wrapper
+        gradle wrapper
+        chmod +x gradlew
 
     - name: Build with Gradle
       run: ./gradlew :dist:shadowJar
