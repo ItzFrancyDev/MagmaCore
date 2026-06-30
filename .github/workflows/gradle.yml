@@ -35,7 +35,45 @@ jobs:
         mkdir -p gradle/wrapper
         gradle wrapper
         chmod +x gradlew
+    
+    - name: Cache Local Maven Repository
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2/repository/org/spigotmc
+        key: ${{ runner.os }}-spigot-buildtools-${{ hashFiles('.github/workflows/*.yml') }}
+        restore-keys: |
+          ${{ runner.os }}-spigot-buildtools-
 
+    - name: Run BuildTools for all required versions
+      run: |
+        mkdir -p buildtools
+        cd buildtools
+        curl -o BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
+        
+        declare -A VERSIONS
+        VERSIONS["v1_19_3"]="1.19.4"
+        VERSIONS["v1_20_1"]="1.20.1"
+        VERSIONS["v1_20_2"]="1.20.2"
+        VERSIONS["v1_20_3"]="1.20.4"
+        VERSIONS["v1_20_4"]="1.20.4"
+        VERSIONS["v1_21_1"]="1.21"
+        VERSIONS["v1_21_2"]="1.21.1"
+        VERSIONS["v1_21_3"]="1.21.3"
+        VERSIONS["v1_21_4"]="1.21.4"
+        VERSIONS["v1_21_5"]="1.21.4"
+        VERSIONS["v1_21_6"]="1.21.4"
+        VERSIONS["v1_21_7"]="1.21.4"
+        VERSIONS["v26"]="1.21.4"
+
+        UNIQUE_VERSIONS=$(echo "${VERSIONS[@]}" | tr ' ' '\n' | sort -u)
+
+        for v in $UNIQUE_VERSIONS; do
+          echo "========================================="
+          echo "Building Spigot version: $v --remapped"
+          echo "========================================="
+          java -jar BuildTools.jar --rev "$v" --remapped
+        done
+      
     - name: Build with Gradle
       run: ./gradlew :dist:shadowJar
 
