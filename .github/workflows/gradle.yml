@@ -68,7 +68,7 @@ jobs:
             echo "Spigot version $v (remapped-mojang) found in cache. Skipping BuildTools."
           else
             echo "Spigot version $v not found in cache. Running BuildTools with Java 17..."
-            /usr/lib/jvm/temurin-17-amd64/bin/java -jar BuildTools.jar --rev "$v" --remapped
+            $JAVA_HOME_17_X64/bin/java -jar BuildTools.jar --rev "$v" --remapped
           fi
           echo "========================================="
         done
